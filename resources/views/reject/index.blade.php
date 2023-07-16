@@ -40,6 +40,9 @@
                     <td>{{ $val->alasan }}</td>
                     <td>{{ $val->status }}</td>
                     <td>
+                        @if ($val->status == 'Pending Refund')
+                        <a href="/reject/upload_bukti/{{$val->id}}" class="btn btn-primary btn-sm mb-2">Upload Bukti Refund</a>
+                        @endif
                         @if ($val->status == 'pending')
                         <a href="/reject/change_status/{{$val->transaction_id}}/Reject diterima" class="btn btn-primary btn-sm mb-2">Reject Diterima</a>
                         <a href="/reject/change_status/{{$val->transaction_id}}/Reject ditolak" class="btn btn-warning btn-sm">Reject DiTolak</a>

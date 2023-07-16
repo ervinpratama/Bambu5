@@ -21,7 +21,7 @@ class TransactionController extends Controller
     $status = $request->input('status');
 
     if(isset($status)){
-            $transactions = Transaction::select('transactions.id', 'transactions.*', 'users.nama', 'bukti_transfer.status', 'bukti_transfer.gambar')
+            $transactions = Transaction::select('transactions.id', 'transactions.*', 'users.nama', 'bukti_transfer.id as bukti_id','bukti_transfer.status', 'bukti_transfer.gambar')
                             ->join('users', 'users.id', '=', 'transactions.user_id')
                             ->leftJoin('bukti_transfer', 'transactions.id', '=', 'bukti_transfer.transaction_id')
                             ->where('bukti_transfer.status', '=', $status)
@@ -29,8 +29,9 @@ class TransactionController extends Controller
                             ->get();
         } else {
         $transactions = Transaction::
-                select('transactions.id', 'transactions.*' ,'users.nama')
+                select('transactions.id', 'transactions.*' ,'users.nama', 'bukti_transfer.id as bukti_id')
                 ->join('users', 'users.id', '=', 'transactions.user_id')
+                ->leftJoin('bukti_transfer', 'transactions.id', '=', 'bukti_transfer.transaction_id')
                 ->orderBy('transactions.id', 'DESC')
                 ->get();
         }
@@ -47,7 +48,25 @@ class TransactionController extends Controller
         return view('transaction.index', ['transactions' => $transactions, 'details' => $transaction_detail]);
     }
 
-    public function history()
+    public function history(Request $request)
+    {
+        $order_id = $request->get('order_id') ? $request->get('order_id') : '';
+        $nama = $request->get('nama') ? $request->get('nama') : '';
+        $data['list'] = Transaction::where('user_id', Auth::user()->id)
+                                    ->select('transactions.*', 'users.nama','bukti_transfer.status as status_b','bukti_transfer.id as bukti_id','rejects.status as status_r', 'rejects.id as reject_id')
+                                    ->join('users', 'users.id', '=', 'transactions.user_id','left')
+                                    ->join('bukti_transfer', 'bukti_transfer.transaction_id', '=', 'transactions.id','left')
+                                    ->join('rejects', 'rejects.transaction_id', '=', 'transactions.id','left')
+                                    ->orderBy('transactions.created_at', 'DESC')
+                                    ->where("transactions.order_id","like","%$order_id%")
+                                    ->where("users.nama","like","%$nama%")
+                                    ->get()->toArray();
+        $data['order_id'] = $order_id;
+        $data['nama'] = $nama;
+        return view('customer.list_history', $data);
+    }
+
+    public function historys()
     {
         $transactions = Transaction::where('user_id', Auth::user()->id)
                                     ->select('transactions.id', 'transactions.*', 'users.nama', 'barang.nama_barang')
@@ -55,19 +74,42 @@ class TransactionController extends Controller
                                     ->join('transaction_detail', 'transaction_detail.transaction_id', '=', 'transactions.id')
                                     ->join('barang', 'barang.id', '=', 'transaction_detail.barang_id')
                                     ->orderBy('transactions.id', 'DESC')
-                                    ->limit(1)
+                                    // ->limit(1)
                                     ->get();
-        
         $transaction_id = [];
 
         foreach($transactions as $data){
             array_push($transaction_id, $data->id);
         }
-
         $transaction_detail = TransactionDetail::join('barang', 'barang.id', '=', 'transaction_detail.barang_id')
         ->whereIn('transaction_detail.transaction_id', $transaction_id)->get();
 
+        // echo "<pre>";
+        // print_r($transaction_detail->toArray());
+        // die;
+
         return view('customer.history', ['history' => $transactions, 'details' => $transaction_detail]);
+    }
+
+    public function detail_history($id)
+    {
+        $transactions = Transaction::where('user_id', Auth::user()->id)
+                                    ->select('transactions.id', 'transactions.*', 'users.nama', 'barang.nama_barang')
+                                    ->join('users', 'users.id', '=', 'transactions.user_id')
+                                    ->join('transaction_detail', 'transaction_detail.transaction_id', '=', 'transactions.id')
+                                    ->join('barang', 'barang.id', '=', 'transaction_detail.barang_id')
+                                    ->where('transactions.id', $id)
+                                    ->limit(1)
+                                    ->get();
+        $transaction_id = [];
+
+        foreach($transactions as $data){
+            array_push($transaction_id, $data->id);
+        }
+        $transaction_detail = TransactionDetail::join('barang', 'barang.id', '=', 'transaction_detail.barang_id')
+        ->whereIn('transaction_detail.transaction_id', $transaction_id)->get();
+
+        return view('customer.detail_history', ['history' => $transactions, 'details' => $transaction_detail]);
     }
 
     public function checkout()
@@ -129,10 +171,69 @@ class TransactionController extends Controller
         }
     }
 
+    public function upload_bukti_refund($id){
+        $data['refund'] = BuktiTransfer::find($id)->toArray();
+        return view('transaction.upload_bukti', $data);
+    }
+
+    public function proses_upload_bukti_refund(Request $request, $id){
+        $request->validate([
+            'bukti' => 'required|image|mimes:png,jpg,jpeg|max:2048'
+        ]);
+
+        $imageName = time().'.'.$request->bukti->extension();
+
+        $refund = BuktiTransfer::find($id);
+        $refund->bukti_refund = $imageName;
+        $refund->status       = 'Selesai';
+        $refund->save();
+        // Public Folder
+        $request->bukti->move(public_path('bukti_transfer'), $imageName);
+        return redirect('transaction');
+    }
+
     public function upload_bukti_transfer($id = null)
     {
         $transaction = Transaction::find($id);
         return view('customer.bukti-transfer', ['transaction' => $transaction]);
+    }
+
+    public function batal_upload($id = null)
+    {
+        $bukti = BuktiTransfer::find($id)->toArray();
+        return view('customer.batal_upload', ['bukti' => $bukti]);
+    }
+
+    public function proses_batal_upload(Request $request, $id){
+        $post = $request->post();
+        $bukti = BuktiTransfer::find($id);
+
+        $bukti->status      = 'Pending Refund';
+        $bukti->bank_refund = $post['bank_refund'];
+        $bukti->rek_refund  = $post['rek_refund'];
+        $bukti->nama_refund = $post['nama_refund'];
+        $bukti->save();
+
+        return redirect('/transaction/history');
+    }
+
+    public function reject_upload($id = null)
+    {
+        $reject = Reject::find($id)->toArray();
+        return view('customer.reject_upload', ['reject' => $reject]);
+    }
+
+    public function proses_reject_upload(Request $request, $id){
+        $post = $request->post();
+        $reject = Reject::find($id);
+
+        $reject->status      = 'Pending Refund';
+        $reject->bank_refund = $post['bank_refund'];
+        $reject->rek_refund  = $post['rek_refund'];
+        $reject->nama_refund = $post['nama_refund'];
+        $reject->save();
+
+        return redirect('/transaction/history');
     }
 
     public function proses_upload(Request $request)
