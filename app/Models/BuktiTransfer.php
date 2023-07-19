@@ -11,7 +11,7 @@ class BuktiTransfer extends Model
 
     protected $table = 'bukti_transfer';
 
-	protected $fillable = ['transaction_id', 'gambar', 'status'];
+	protected $fillable = ['transaction_id', 'gambar','bank_refund','rek_refund','nama_refund', 'status'];
 
     public function transaction()
     {

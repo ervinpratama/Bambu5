@@ -54,13 +54,24 @@ Route::middleware('auth')->group(function () {
 		Route::get('/history', 'history')->name('history');
 
 		Route::get('/terima_pesanan/{id}', 'terima_pesanan');
+		Route::get('/detail/{id}', 'detail_history');
 		Route::get('/batalkan_pesanan/{id}', 'batalkan_pesanan');
 
 		Route::get('/upload_bukti_transfer/{id}', 'upload_bukti_transfer');
 		Route::post('/proses_upload', 'proses_upload')->name('upload.bukti');
+		
+		Route::get('/upload_bukti_refund/{id}', 'upload_bukti_refund');
+		Route::post('/proses_upload_bukti_refund/{id}', 'proses_upload_bukti_refund');
+
+
+		Route::get('/batal_upload/{id}', 'batal_upload');
+		Route::post('/proses_batal_upload/{id}', 'proses_batal_upload');
+		Route::get('/reject_upload/{id}', 'reject_upload');
+		Route::post('/proses_reject_upload/{id}', 'proses_reject_upload');
 
 		Route::get('/reject/{id}', 'reject');
 		Route::post('/store_reject', 'store_reject');
+		
 
 		Route::get('/accept/{id}', 'accept');
 		Route::get('/kirim/{id}', 'kirim');
@@ -70,6 +81,8 @@ Route::middleware('auth')->group(function () {
 	//Transaction
 	Route::controller(RejectController::class)->prefix('reject')->group(function () {
 		Route::get('/', 'index');
+		Route::get('/upload_bukti/{id}','upload_bukti');
+		Route::post('/proses_upload_bukti/{id}','proses_upload_bukti');
 		Route::get('/change_status/{id}/{status}', 'change_status');
 	});
 
