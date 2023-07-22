@@ -14,8 +14,11 @@
                     @method('POST')
                     @csrf
                     <div class="row">
-                        <div class="col-md-8">
-                            <input name="daterange" type="text" class="form-control form-control-sm">
+                        <div class="col-md-4">
+                            <input required name="start" type="date" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-4">
+                            <input required name="to" type="date" class="form-control form-control-sm">
                         </div>
                         <div class="col-md-4">
                             <button type="submit" class="btn btn-primary btn-sm">Export Data</button>
@@ -72,18 +75,26 @@
                         <span class="badge badge-danger">None</span>
                         @elseif(isset($transaction->reject->status) && $transaction->reject->status == 'pending')
                          <span class="badge badge-danger">Reject Pending</span>
-                        @elseif(isset($transaction->reject->status) && $transaction->reject->status == 'diterima')
+                        @elseif(isset($transaction->reject->status) && $transaction->reject->status == 'Reject diterima')
                          <span class="badge badge-danger">Pembatalan Diterima</span>
-                        @elseif(isset($transaction->reject->status) && $transaction->reject->status == 'ditolak')
+                        @elseif(isset($transaction->reject->status) && $transaction->reject->status == 'Reject ditolak')
                          <span class="badge badge-danger">Pembatalan Ditolak</span>
+                        @elseif(isset($transaction->reject->status) && $transaction->reject->status == 'Pending Refund')
+                         <span class="badge badge-warning">Pending Refund</span>
+                        @elseif(isset($transaction->reject->status) && $transaction->reject->status == 'Selesai')
+                         <span class="badge badge-success">Refund Selesai</span>
                         @elseif($transaction->bukti_transfer->status == 'acc')
                          <span class="badge badge-success">Pesanan Diterima</span>
                         @elseif($transaction->bukti_transfer->status == 'dikirim')
                          <span class="badge badge-success">Pesanan Dikirim</span>
+                        @elseif($transaction->bukti_transfer->status == 'Pending Refund')
+                         <span class="badge badge-warning">Pending Refund</span>
                         @elseif($transaction->bukti_transfer->status == 'dibatalkan')
                          <span class="badge badge-danger">Pesanan Dibatalkan</span>
                         @elseif($transaction->bukti_transfer->status == 'selesai')
                          <span class="badge badge-info">Pesanan Selesai</span>
+                        @elseif($transaction->bukti_transfer->status == 'Selesai')
+                         <span class="badge badge-success">Refund Selesai</span>
                         @else
                         <span class="badge badge-warning">Pending</span>
                         @endif
@@ -155,7 +166,10 @@
                         @endif
                     </td>
                     <td>
-                        @if (isset($transaction->bukti_transfer->status) && $transaction->bukti_transfer->status == 'pending')
+                        
+                        @if (isset($transaction->bukti_transfer->status) && $transaction->bukti_transfer->status == 'Pending Refund')
+                        <a href="/transaction/upload_bukti_refund/{{$transaction->bukti_transfer->id}}" class="btn btn-success btn-sm mb-2">Upload Bukti Refund</a>
+                        @elseif (isset($transaction->bukti_transfer->status) && $transaction->bukti_transfer->status == 'pending')
                         <a href="/transaction/accept/{{$transaction->id}}" class="btn btn-success btn-sm">Acc</a>
                         @elseif(isset($transaction->bukti_transfer->status) && $transaction->bukti_transfer->status == 'acc')
                         <a href="/transaction/kirim/{{$transaction->id}}" class="btn btn-success btn-sm">Kirim</a>

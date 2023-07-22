@@ -11,7 +11,7 @@ class Reject extends Model
 
     protected $table = 'rejects';
 
-	protected $fillable = ['transaction_id', 'images', 'alasan','status'];
+	protected $fillable = ['transaction_id', 'images', 'alasan','bank_refund','rek_refund','nama_refund','status'];
 
     public function transaction()
     {
