@@ -77,15 +77,11 @@
                             @endif
                             </td>
                             <td class="text-center">
-<<<<<<< HEAD
                                 @if (isset($row['status_r']) && $row['status_r'] == "Selesai")
                                 <button class="btn btn-primary btn-sm" data-gambar="{{$row['refund_r']}}" id="bukti_refund"><i class="fa fa-eye"></i> Bukti Refund</button>
                                 @elseif($row['status_b'] == "Selesai")
                                 <button class="btn btn-primary btn-sm" data-gambar="{{$row['refund_b']}}" id="bukti_refund"><i class="fa fa-eye"></i> Bukti Refund</button>
                                 @endif
-=======
-                                
->>>>>>> 0f23afc39607aaffc18351738969db6999693523
                                 <a href="/transaction/detail/{{ $row['id'] }}" class="btn btn-success btn-sm">Detail</a>
                                 @if(!isset($row['status_b']) || $row['status_b'] == 'pending' && !isset($row['status_b']))
                                 <a href="/transaction/upload_bukti_transfer/{{ $row['id'] }}" class="btn btn-sm btn-primary">Upload</a>
@@ -115,7 +111,7 @@
             </div>
         </div>
 </div>
-<<<<<<< HEAD
+
 <!-- Modal -->
 <div class="modal fade" id="buktirefundmodal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -136,6 +132,7 @@
     </div>
   </div>
 @endsection
+
 <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
 <script>
 $(document).ready(function(){
@@ -151,7 +148,6 @@ $(document).ready(function(){
     })
 })
 </script>
-=======
 
-@endsection
->>>>>>> 0f23afc39607aaffc18351738969db6999693523
+
+
