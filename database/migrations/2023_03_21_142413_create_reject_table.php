@@ -19,6 +19,10 @@ return new class extends Migration
             $table->string('images');
             $table->string('alasan');
             $table->string('status');
+            $table->string('bank_refund')->nullable();
+            $table->string('rek_refund')->nullable();
+            $table->string('nama_refund')->nullable();
+            $table->string('bukti_refund')->nullable();
             $table->timestamps();
         });
     }

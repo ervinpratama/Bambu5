@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="container">
-    <h3 class="mt-3">Transaction History</h3>
+    <h3 class="mt-3">Detail Transaction History</h3>
     <hr/>
     @foreach ($history as $data)
         
@@ -69,19 +69,21 @@
 
                 @if (isset($data->reject->status) && $data->reject->status == "pending")
                 <p>Status Pembayaran : <span class="badge bg-danger">Rejected Pending</span></p>
-                @elseif (isset($data->reject->status) && $data->reject->status == "diterima")
+                @elseif (isset($data->reject->status) && $data->reject->status == "Reject diterima")
                 <p>Status Pembayaran : <span class="badge bg-danger">Pembatalan Diterima</span></p>
-                @elseif (isset($data->reject->status) && $data->reject->status == "ditolak")
+                @elseif (isset($data->reject->status) && $data->reject->status == "Reject ditolak")
                 <p>Status Pembayaran : <span class="badge bg-danger">Pembatalan Ditolak</span></p>
-                @elseif ($data->bukti_transfer == 'null')
+                @elseif (isset($data->reject->status) && $data->reject->status == "Pending Refund")
+                <p>Status Pembayaran : <span class="badge bg-warning">Pending Refund</span></p>
+                @elseif (!isset($data->bukti_transfer))
                 <p>Status Pembayaran : <span class="badge bg-danger">Belum Ada Bukti Pembayaran</span></p>
-                @elseif ($data->bukti_transfer->status == "acc")
+                @elseif (isset($data->bukti_transfer->status) && $data->bukti_transfer->status == "acc")
                 <p>Status Pembayaran : <span class="badge bg-success">Diterima</span></p>
-                @elseif ($data->bukti_transfer->status == "dikirim")
+                @elseif (isset($data->bukti_transfer->status) && $data->bukti_transfer->status == "dikirim")
                 <p>Status Pembayaran : <span class="badge bg-success">Dikirim</span></p>
-                @elseif ($data->bukti_transfer->status == "dibatalkan")
+                @elseif (isset($data->bukti_transfer->status) && $data->bukti_transfer->status == "dibatalkan")
                 <p>Status Pembayaran : <span class="badge bg-danger">Dibatalkan</span></p>
-                @elseif ($data->bukti_transfer->status == "selesai")
+                @elseif (isset($data->bukti_transfer->status) && $data->bukti_transfer->status == "selesai")
                 <p>Status Pembayaran : <span class="badge bg-info">Selesai</span></p>
                 @else
                 <p>Status Pembayaran : <span class="badge bg-warning text-dark">Pending</span></p>
@@ -94,7 +96,7 @@
                     <a onclick = "if (! confirm('Terima Pesanan?')) { return false; }" href="/transaction/terima_pesanan/{{ $data->id }}" class="btn btn-warning mt-2">Terima Pesanan</a>
                     @elseif(isset($data->bukti_transfer->status) && $data->bukti_transfer->status == "acc")
                     <a onclick = "if (! confirm('Batalkan Pesanan?')) { return false; }" href="/transaction/batalkan_pesanan/{{ $data->id }}" class="btn btn-danger mt-2">Batalkan Pesanan</a>
-                    @elseif(isset($data->bukti_transfer->status) && $data->bukti_transfer->status == "selesai")
+                    @elseif(isset($data->bukti_transfer->status) && $data->bukti_transfer->status == "selesai" && !isset($data->reject->status))
                     <a href="/transaction/reject/{{ $data->id }}" class="btn btn-danger mt-2">Reject</a>
                     @else
                     @endif
