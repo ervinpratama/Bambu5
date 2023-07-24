@@ -54,7 +54,6 @@ class TransactionController extends Controller
         $nama = $request->get('nama') ? $request->get('nama') : '';
         $data['list'] = Transaction::where('user_id', Auth::user()->id)
                                     ->select('transactions.*', 'users.nama','bukti_transfer.bukti_refund as refund_b','bukti_transfer.status as status_b','bukti_transfer.id as bukti_id','rejects.status as status_r','rejects.bukti_refund as refund_r', 'rejects.id as reject_id')
-                                    ->select('transactions.*', 'users.nama','bukti_transfer.status as status_b','bukti_transfer.id as bukti_id','rejects.status as status_r', 'rejects.id as reject_id')
                                     ->join('users', 'users.id', '=', 'transactions.user_id','left')
                                     ->join('bukti_transfer', 'bukti_transfer.transaction_id', '=', 'transactions.id','left')
                                     ->join('rejects', 'rejects.transaction_id', '=', 'transactions.id','left')
@@ -188,11 +187,8 @@ class TransactionController extends Controller
         $refund->bukti_refund = $imageName;
         $refund->status       = 'Selesai';
         $refund->save();
-        
         // Public Folder
-
         $request->bukti->move(public_path('bukti_refund'), $imageName);
-        $request->bukti->move(public_path('bukti_transfer'), $imageName);
         return redirect('transaction');
     }
 
